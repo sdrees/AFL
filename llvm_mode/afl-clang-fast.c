@@ -95,7 +95,7 @@ static void find_obj(u8* argv0) {
   }
 
   FATAL("Unable to find 'afl-llvm-rt.o' or 'afl-llvm-pass.so'. Please set AFL_PATH");
- 
+
 }
 
 
@@ -128,8 +128,10 @@ static void edit_params(u32 argc, char** argv) {
 
 #ifdef USE_TRACE_PC
   cc_params[cc_par_cnt++] = "-fsanitize-coverage=trace-pc-guard";
+#ifndef __ANDROID__
   cc_params[cc_par_cnt++] = "-mllvm";
   cc_params[cc_par_cnt++] = "-sanitizer-coverage-block-threshold=0";
+#endif
 #else
   cc_params[cc_par_cnt++] = "-Xclang";
   cc_params[cc_par_cnt++] = "-load";
@@ -147,6 +149,7 @@ static void edit_params(u32 argc, char** argv) {
     u8* cur = *(++argv);
 
     if (!strcmp(cur, "-m32")) bit_mode = 32;
+    if (!strcmp(cur, "armv7a-linux-androideabi")) bit_mode = 32;
     if (!strcmp(cur, "-m64")) bit_mode = 64;
 
     if (!strcmp(cur, "-x")) x_set = 1;
@@ -285,6 +288,7 @@ static void edit_params(u32 argc, char** argv) {
       cc_params[cc_par_cnt++] = "none";
     }
 
+#ifndef __ANDROID__
     switch (bit_mode) {
 
       case 0:
@@ -308,6 +312,7 @@ static void edit_params(u32 argc, char** argv) {
         break;
 
     }
+#endif
 
   }
 
@@ -352,7 +357,9 @@ int main(int argc, char** argv) {
   }
 
 
+#ifndef __ANDROID__
   find_obj(argv[0]);
+#endif
 
   edit_params(argc, argv);
 
